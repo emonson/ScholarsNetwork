@@ -8,6 +8,7 @@ var width = 900,
 var color = d3.scale.category20();
 var x_scale = d3.scale.linear().domain([-9500, 4200]).range([0, width]);
 var y_scale = d3.scale.linear().domain([-5110, 4100]).range([0, height]);
+var r_scale = d3.scale.linear().domain([40, 120]).range([4, 12]);
 
 //Set up the force layout
 var force = d3.layout.force()
@@ -51,6 +52,39 @@ $.ajax({
     }
 });	
 
+//Toggle stores whether the highlighting is on
+var toggle = 0;
+//Create an array logging what is connected to what
+var linkedByIndex = {};
+for (i = 0; i < graph.nodes.length; i++) {
+    linkedByIndex[i + "," + i] = 1;
+};
+graph.links.forEach(function (d) {
+    linkedByIndex[d.source.index + "," + d.target.index] = 1;
+});
+//This function looks up whether a pair are neighbours
+function neighboring(a, b) {
+    return linkedByIndex[a.index + "," + b.index];
+}
+function connectedNodes() {
+    if (toggle == 0) {
+        //Reduce the opacity of all but the neighbouring nodes
+        d = d3.select(this).node().__data__;
+        node.style("opacity", function (o) {
+            return neighboring(d, o) | neighboring(o, d) ? 1 : 0.1;
+        });
+        link.style("opacity", function (o) {
+            return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1;
+        });
+        //Reduce the op
+        toggle = 1;
+    } else {
+        //Put them back to opacity=1
+        node.style("opacity", 1);
+        link.style("opacity", 1);
+        toggle = 0;
+    }
+}
     
 //Creates the graph data structure out of the json data
 force.nodes(graph.nodes)
@@ -71,9 +105,10 @@ var node = svg.selectAll(".node")
     .enter()
         .append("circle")
         .attr("class", "node")
-        .attr("r", 4)
+        .attr("r", function(d) { return r_scale(d.size); })
         .style("fill", function (d) { return color(d.mod_class); })
-        .call(force.drag);
+        .call(force.drag)
+        .on('click', connectedNodes);
 
 
 //Now we are giving the SVGs co-ordinates - the force layout is generating the co-ordinates which this code is using to update the attributes of the SVG elements

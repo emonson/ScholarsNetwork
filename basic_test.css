@@ -1,7 +1,8 @@
 /* http://www.coppelia.io/2014/07/an-a-to-z-of-extra-features-for-the-d3-force-layout/ */
 
 .node {
-    stroke: none;
+    stroke: #FFF;
+    stroke-width: 0.25pt;
 }
 
 .link {
