@@ -73,28 +73,28 @@ function connectedNodes() {
         node.style("opacity", function (o) {
             return neighboring(d, o) | neighboring(o, d) ? 1 : 0.1;
         });
-        link.style("opacity", function (o) {
-            return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1;
-        });
         //Reduce the op
         toggle = 1;
     } else {
         //Put them back to opacity=1
         node.style("opacity", 1);
-        link.style("opacity", 1);
         toggle = 0;
     }
 }
+
+// Testing click link filter
+function neighbor_links() {
+}
     
-//Creates the graph data structure out of the json data
+// Creates the graph data structure out of the json data
 force.nodes(graph.nodes)
     .links(graph.links)
     .start();
 
-//Create all the line svgs but without locations yet
+// Create all the line svgs but without locations yet
 var link = svg.selectAll(".link")
-        .data(graph.links);
-//     .enter()
+        .data(graph.links)
+    .enter();
 //         .append("line")
 //         .attr("class", "link");
 //     // .style("stroke-width", function (d) { return Math.sqrt(d.value); });
@@ -113,11 +113,11 @@ var node = svg.selectAll(".node")
 
 //Now we are giving the SVGs co-ordinates - the force layout is generating the co-ordinates which this code is using to update the attributes of the SVG elements
 force.on("tick", function () {
-    link.attr("x1", function (d) { return d.source.x; })
-        .attr("y1", function (d) { return d.source.y; })
-        .attr("x2", function (d) { return d.target.x; })
-        .attr("y2", function (d) { return d.target.y; });
-
+//     link.attr("x1", function (d) { return d.source.x; })
+//         .attr("y1", function (d) { return d.source.y; })
+//         .attr("x2", function (d) { return d.target.x; })
+//         .attr("y2", function (d) { return d.target.y; });
+// 
     node.attr("cx", function (d) { return d.x; })
          .attr("cy", function (d) { return d.y; });
 });
