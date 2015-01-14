@@ -5,6 +5,11 @@
     stroke-width: 0.25pt;
 }
 
+.dimmed {
+    fill-opacity: 0.2;
+    stroke-opacity: 0.2;
+}
+
 .link {
     stroke: #999;
     stroke-width: 0.5px;

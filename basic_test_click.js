@@ -19,7 +19,11 @@ var force = d3.layout.force()
 //Append a SVG to the body of the html page. Assign this SVG as an object to svg
 var svg = d3.select("body").append("svg")
     .attr("width", width)
-    .attr("height", height);
+    .attr("height", height)
+    .on("mousedown", function(){
+            d3.selectAll(".link").remove();
+            d3.selectAll(".node").classed('dimmed', false);
+        });
 
 //Read the data from a json file
 var graph = {};
@@ -83,24 +87,28 @@ var init_vis = function(edge_data) {
     node_neighbors = new Array(n_nodes);
     node_edges = new Array(n_nodes);
     for (var ii=0; ii<n_nodes; ii++) {
-        node_neighbors[ii] = [];
+        // include self id as neighbor for click highlighting
+        node_neighbors[ii] = [ii];
         node_edges[ii] = [];
     }
     graph.links.forEach(function(d,i){
-        node_neighbors[d.source.id].push(d.target);
-        node_neighbors[d.target.id].push(d.source);
+        // node neighbors are IDs
+        node_neighbors[d.source.id].push(d.target.id);
+        node_neighbors[d.target.id].push(d.source.id);
+        // edge neighbors are edge objects
         node_edges[d.source.id].push(d);
         node_edges[d.target.id].push(d);
     });
     
-    var connected_nodes = function(D) { 
-            // Create all the line svgs but without locations yet
-        var link = svg.selectAll(".link")
-                .data(node_edges[D.id], function(d){return d.edge_id;})
-            .attr("x1", function (d) { return d.source.x; })
-            .attr("y1", function (d) { return d.source.y; })
-            .attr("x2", function (d) { return d.target.x; })
-            .attr("y2", function (d) { return d.target.y; });
+    var display_connected_edges = function(D) { 
+        
+        // background svg group clears links on mousedown, so want to stop event from
+        // propagating through this circle into the background
+        d3.event.stopPropagation();
+        
+        // Create only line svgs that are connected to the current node
+        link = svg.selectAll(".link")
+                .data(node_edges[D.id], function(d){return d.edge_id;});
         
         link.enter()
             .append("line")
@@ -108,15 +116,17 @@ var init_vis = function(edge_data) {
             .attr("x1", function (d) { return d.source.x; })
             .attr("y1", function (d) { return d.source.y; })
             .attr("x2", function (d) { return d.target.x; })
-            .attr("y2", function (d) { return d.target.y; });
-        
+            .attr("y2", function (d) { return d.target.y; })
+            .style("stroke-width", function (d) { return 1.5*Math.sqrt(d.weight); });
+
         link.exit()
             .remove();
-
-            // .style("stroke-width", function (d) { return Math.sqrt(d.value); });
-
+        
+        node.classed('dimmed', function(d,i){ return node_neighbors[D.id].indexOf(i) < 0; });
     };
-
+    
+    var link = svg.selectAll(".link");
+    
     //Do the same with the circles for the nodes - no 
     var node = svg.selectAll(".node")
             .data(graph.nodes, function(d){ return d.id; })
@@ -126,13 +136,17 @@ var init_vis = function(edge_data) {
             .attr("r", 4)
             .style("fill", function (d) { return color(d.dept_id); })
             .call(force.drag)
-            .on('click', connected_nodes);
+            .on('mousedown', display_connected_edges);
 
 
     //Now we are giving the SVGs co-ordinates - the force layout is generating the co-ordinates which this code is using to update the attributes of the SVG elements
     force.on("tick", function () {
+        link.attr("x1", function (d) { return d.source.x; })
+            .attr("y1", function (d) { return d.source.y; })
+            .attr("x2", function (d) { return d.target.x; })
+            .attr("y2", function (d) { return d.target.y; });
         node.attr("cx", function (d) { return d.x; })
-             .attr("cy", function (d) { return d.y; });
+            .attr("cy", function (d) { return d.y; });
     });
 
 
