@@ -2,7 +2,8 @@
 
 //Constants for the SVG
 var width = 900,
-    height = 600;
+    height = 600,
+    active = d3.select(null);
 
 //Set up the colour scale
 var x_scale = d3.scale.linear().domain([-9500, 4200]).range([0, width]);
@@ -33,6 +34,7 @@ svg_base.append("rect")
     .attr("height", height);
 
 var svg = svg_base.append("g");
+var svg_links = svg.append("g");
 
 svg_base
     .call(zoom)
@@ -41,6 +43,7 @@ svg_base
     .on("dblclick", function(){
             d3.selectAll(".link").remove();
             d3.selectAll(".node").classed('dimmed', false);
+            reset();
         });
 
 function zoomed() {
@@ -129,7 +132,7 @@ var init_vis = function(edge_data) {
         d3.event.stopPropagation();
         
         // Create only line svgs that are connected to the current node
-        link = svg.selectAll(".link")
+        link = svg_links.selectAll(".link")
                 .data(node_edges[D.id], function(d){return d.edge_id;});
         
         link.enter()
@@ -158,7 +161,8 @@ var init_vis = function(edge_data) {
             .attr("r", 4)
             .style("fill", function (d) { return color(d.dept_id); })
             .call(force.drag)
-            .on('mousedown', display_connected_edges);
+            .on('mousedown', display_connected_edges)
+            .on('click', clicked);
 
 
     //Now we are giving the SVGs co-ordinates - the force layout is generating the co-ordinates which this code is using to update the attributes of the SVG elements
@@ -177,3 +181,41 @@ var init_vis = function(edge_data) {
 // Start data loading 
 load_nodes();
 
+function clicked(d) {
+  if (active.node() === this) return reset();
+  active.classed("active", false);
+  active = d3.select(this).classed("active", true);
+
+  var bounds = calculate_neighbor_bounds(d),
+      dx = bounds[1][0] - bounds[0][0],
+      dy = bounds[1][1] - bounds[0][1],
+      x = (bounds[0][0] + bounds[1][0]) / 2,
+      y = (bounds[0][1] + bounds[1][1]) / 2,
+      scale = .9 / Math.max(dx / width, dy / height),
+      translate = [width / 2 - scale * x, height / 2 - scale * y];
+
+  svg_base.transition()
+      .duration(750)
+      .call(zoom.translate(translate).scale(scale).event);
+}
+
+function reset() {
+  active.classed("active", false);
+  active = d3.select(null);
+
+  svg_base.transition()
+      .duration(750)
+      .call(zoom.translate([0, 0]).scale(1).event);
+}
+
+function zoomed() {
+    svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+}
+
+function calculate_neighbor_bounds(d) {
+    var x1 = d.x - 50;
+    var y1 = d.y - 50;
+    var x2 = d.x + 50;
+    var y2 = d.y + 50;
+    return [[x1, y1], [x2, y2]];
+}
