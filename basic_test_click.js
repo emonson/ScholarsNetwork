@@ -34,6 +34,10 @@ svg_base.append("rect")
     .attr("height", height);
 
 var svg = svg_base.append("g");
+// When links were drawn in front (in the same group as nodes), clicking would
+// turn on links, but zoom to bounds would get interrupted if the click was placed
+// where links eventually showed up... Not sure why, but works better if links are drawn
+// in their own group behind.
 var svg_links = svg.append("g");
 
 svg_base
@@ -99,9 +103,6 @@ var init_vis = function(edge_data) {
     
     graph.links = edge_data;
     
-    //Toggle stores whether the highlighting is on
-    var toggle = 0;
-
     // Creates the graph data structure out of the json data
     force.nodes(graph.nodes)
         .links(graph.links)
@@ -148,6 +149,8 @@ var init_vis = function(edge_data) {
             .remove();
         
         node.classed('dimmed', function(d,i){ return node_neighbors[D.id].indexOf(i) < 0; });
+        
+        // TODO: sort un-dimmed nodes to top
     };
     
     var link = svg.selectAll(".link");
@@ -213,9 +216,16 @@ function zoomed() {
 }
 
 function calculate_neighbor_bounds(d) {
-    var x1 = d.x - 50;
-    var y1 = d.y - 50;
-    var x2 = d.x + 50;
-    var y2 = d.y + 50;
-    return [[x1, y1], [x2, y2]];
+    var nn = node_neighbors[d.id];
+    var nodes = graph.nodes;
+    var x_min=Infinity, y_min=Infinity, x_max=-Infinity, y_max=-Infinity;
+    for (var ii=0; ii<nn.length; ii++) {
+        var x = nodes[nn[ii]].x;
+        var y = nodes[nn[ii]].y;
+        x_min = x < x_min ? x : x_min;
+        y_min = y < y_min ? y : y_min;
+        x_max = x > x_max ? x : x_max;
+        y_max = y > y_max ? y : y_max;
+    }
+    return [[x_min, y_min], [x_max, y_max]]
 }
