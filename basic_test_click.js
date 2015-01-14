@@ -16,26 +16,36 @@ var force = d3.layout.force()
     .linkDistance(30)
     .size([width, height]);
 
-var zoom = function() {
-    svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-};
-
+var zoom = d3.behavior.zoom()
+    .translate([0, 0])
+    .scale(1)
+    .scaleExtent([1, 8])
+    .on("zoom", zoomed);
+    
 //Append a SVG to the body of the html page. Assign this SVG as an object to svg
 var svg_base = d3.select("body").append("svg")
     .attr("width", width)
-    .attr("height", height)
-    .append("g")
-	.call(d3.behavior.zoom().scaleExtent([0.25, 8]).on("zoom", zoom)).on("dblclick.zoom", null)
-    .on("dblclick", function(){
-            d3.selectAll(".link").remove();
-            d3.selectAll(".node").classed('dimmed', false);
-        });
+    .attr("height", height);
+    
 svg_base.append("rect")
     .attr("class", "overlay")
     .attr("width", width)
     .attr("height", height);
 
 var svg = svg_base.append("g");
+
+svg_base
+    .call(zoom)
+    .call(zoom.event)
+    .on("dblclick.zoom", null)
+    .on("dblclick", function(){
+            d3.selectAll(".link").remove();
+            d3.selectAll(".node").classed('dimmed', false);
+        });
+
+function zoomed() {
+    svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+}
 
 //Read the data from a json file
 var graph = {};
