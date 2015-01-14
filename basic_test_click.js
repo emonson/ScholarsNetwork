@@ -16,14 +16,26 @@ var force = d3.layout.force()
     .linkDistance(30)
     .size([width, height]);
 
+var zoom = function() {
+    svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+};
+
 //Append a SVG to the body of the html page. Assign this SVG as an object to svg
-var svg = d3.select("body").append("svg")
+var svg_base = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height)
-    .on("mousedown", function(){
+    .append("g")
+	.call(d3.behavior.zoom().scaleExtent([0.25, 8]).on("zoom", zoom)).on("dblclick.zoom", null)
+    .on("dblclick", function(){
             d3.selectAll(".link").remove();
             d3.selectAll(".node").classed('dimmed', false);
         });
+svg_base.append("rect")
+    .attr("class", "overlay")
+    .attr("width", width)
+    .attr("height", height);
+
+var svg = svg_base.append("g");
 
 //Read the data from a json file
 var graph = {};

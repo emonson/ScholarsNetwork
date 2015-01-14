@@ -10,6 +10,11 @@
     stroke-opacity: 0.2;
 }
 
+.overlay {
+    fill: none;
+    pointer-events: all;
+}
+
 .link {
     stroke: #999;
     stroke-width: 0.5px;
