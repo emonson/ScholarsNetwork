@@ -148,14 +148,22 @@ var init_vis = function(edge_data) {
         link.exit()
             .remove();
         
+        // Test if nodes are in list of neighbor IDs, and if not, dim
         node.classed('dimmed', function(d,i){ return node_neighbors[D.id].indexOf(i) < 0; });
         
         // TODO: sort un-dimmed nodes to top
     };
     
+    //Set up tooltip
+    var tip = d3.tip()
+        .attr('class', 'd3-tip')
+        .offset([-8, 0])
+        .html(function (d) { return  d.author + "<br />" + d.dept; });
+    svg_base.call(tip);
+
     var link = svg.selectAll(".link");
     
-    //Do the same with the circles for the nodes - no 
+    // Circles for the NODES
     var node = svg.selectAll(".node")
             .data(graph.nodes, function(d){ return d.id; })
         .enter()
@@ -165,10 +173,14 @@ var init_vis = function(edge_data) {
             .style("fill", function (d) { return color(d.dept_id); })
             .call(force.drag)
             .on('mousedown', display_connected_edges)
+            .on('mouseover', tip.show)
+            .on('mouseout', tip.hide)
             .on('click', clicked);
 
 
-    //Now we are giving the SVGs co-ordinates - the force layout is generating the co-ordinates which this code is using to update the attributes of the SVG elements
+    // Now we are giving the SVGs co-ordinates
+    // the force layout is generating the co-ordinates 
+    // which this code is using to update the attributes of the SVG elements
     force.on("tick", function () {
         link.attr("x1", function (d) { return d.source.x; })
             .attr("y1", function (d) { return d.source.y; })
@@ -194,7 +206,7 @@ function clicked(d) {
       dy = bounds[1][1] - bounds[0][1],
       x = (bounds[0][0] + bounds[1][0]) / 2,
       y = (bounds[0][1] + bounds[1][1]) / 2,
-      scale = .9 / Math.max(dx / width, dy / height),
+      scale = 0.8 / Math.max(dx / width, dy / height),
       translate = [width / 2 - scale * x, height / 2 - scale * y];
 
   svg_base.transition()
