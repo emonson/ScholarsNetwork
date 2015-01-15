@@ -1,8 +1,23 @@
 /* http://www.coppelia.io/2014/07/an-a-to-z-of-extra-features-for-the-d3-force-layout/ */
 
+/* this ends up controlling the jQuery UI font sizes */
+body {
+    font-size: 10px;
+}
+
 .node {
     stroke: #FFF;
     stroke-width: 0.25pt;
+}
+
+.node.active {
+    stroke: #444;
+    stroke-width: 1.0pt;
+}
+
+.node.hovered {
+    stroke: #000;
+    stroke-width: 1.0pt;
 }
 
 .dimmed {
@@ -19,6 +34,14 @@
     stroke: #999;
     stroke-width: 0.5px;
     stroke-opacity: 0.5;
+}
+
+#search_widget {
+    margin: 5px;
+}
+
+#network_vis {
+    margin: 5px;
 }
 
 /* https://github.com/Caged/d3-tip/blob/master/examples/example-styles.css */

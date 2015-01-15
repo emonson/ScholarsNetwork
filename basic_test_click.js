@@ -24,7 +24,7 @@ var zoom = d3.behavior.zoom()
     .on("zoom", zoomed);
     
 //Append a SVG to the body of the html page. Assign this SVG as an object to svg
-var svg_base = d3.select("body").append("svg")
+var svg_base = d3.select("#network_vis").append("svg")
     .attr("width", width)
     .attr("height", height);
     
@@ -58,6 +58,10 @@ function zoomed() {
 var graph = {};
 var node_neighbors;
 var node_edges;
+// Array for search box autocomplete to use
+var author_names = [];
+// Not extremely memory-efficient, but keeping a lookup table of name -> ID for select after search
+var author_name_id_dict = {};
 
 // Helper function for parsing nodes (authors departments positions) CSV
 var depts_accessor = function(d) { 
@@ -88,14 +92,22 @@ var load_nodes = function() {
 };
 
 var load_edges = function(node_data) {
-    // Pre-scale all xy positions so dragging works properly
+    
+    // Pre-scale all xy node positions so dragging works properly
+    // and construct array of names for use in search
     x_scale.domain(d3.extent(node_data, function(d){return d.x;}));
     y_scale.domain(d3.extent(node_data, function(d){return d.y;}));
     for (var ii=0; ii<node_data.length; ii++) {
-        node_data[ii].x = x_scale(node_data[ii].x);
-        node_data[ii].y = y_scale(node_data[ii].y);
+        var node = node_data[ii];
+        node.x = x_scale(node.x);
+        node.y = y_scale(node.y);
+        author_names.push(node.author);
+        author_name_id_dict[node.author] = node.id;
     }
     graph.nodes = node_data;
+    author_names = author_names.sort();
+    
+    // Actually start loading edge data
     d3.csv('data/authorsim_p0_k50a30_diffusion_edges.csv', edges_accessor, init_vis);
 };
 
@@ -126,41 +138,13 @@ var init_vis = function(edge_data) {
         node_edges[d.target.id].push(d);
     });
     
-    var display_connected_edges = function(D) { 
-        
-        // background svg group clears links on mousedown, so want to stop event from
-        // propagating through this circle into the background
-        d3.event.stopPropagation();
-        
-        // Create only line svgs that are connected to the current node
-        link = svg_links.selectAll(".link")
-                .data(node_edges[D.id], function(d){return d.edge_id;});
-        
-        link.enter()
-            .append("line")
-            .attr("class", "link")
-            .attr("x1", function (d) { return d.source.x; })
-            .attr("y1", function (d) { return d.source.y; })
-            .attr("x2", function (d) { return d.target.x; })
-            .attr("y2", function (d) { return d.target.y; })
-            .style("stroke-width", function (d) { return 1.5*Math.sqrt(d.weight); });
-
-        link.exit()
-            .remove();
-        
-        // Test if nodes are in list of neighbor IDs, and if not, dim
-        node.classed('dimmed', function(d,i){ return node_neighbors[D.id].indexOf(i) < 0; });
-        
-        // TODO: sort un-dimmed nodes to top
-    };
+    // Search
+    $(function () {
+        $("#search").autocomplete({
+            source: author_names
+        });
+    });
     
-    //Set up tooltip
-    var tip = d3.tip()
-        .attr('class', 'd3-tip')
-        .offset([-8, 0])
-        .html(function (d) { return  d.author + "<br />" + d.dept; });
-    svg_base.call(tip);
-
     var link = svg.selectAll(".link");
     
     // Circles for the NODES
@@ -168,13 +152,14 @@ var init_vis = function(edge_data) {
             .data(graph.nodes, function(d){ return d.id; })
         .enter()
             .append("circle")
+			.attr("id", function(d) {return "n_" + d.id;})
             .attr("class", "node")
             .attr("r", 4)
             .style("fill", function (d) { return color(d.dept_id); })
             .call(force.drag)
             .on('mousedown', display_connected_edges)
-            .on('mouseover', tip.show)
-            .on('mouseout', tip.hide)
+            .on('mouseover', hover_in)
+            .on('mouseout', hover_out)
             .on('click', clicked);
 
 
@@ -196,10 +181,62 @@ var init_vis = function(edge_data) {
 // Start data loading 
 load_nodes();
 
+// Set up tooltip
+// https://github.com/Caged/d3-tip
+var tip = d3.tip()
+    .attr('class', 'd3-tip')
+    .offset([-8, 0])
+    .html(function (d) { return  "<strong>"+ d.author + "</strong><br />" + d.dept; });
+svg_base.call(tip);
+
+function hover_in(d) {
+    d3.select(this).classed("hovered", true);
+    tip.show(d);
+}
+
+function hover_out(d) {
+    d3.select(this).classed("hovered", false);
+    tip.hide(d);
+}
+
+function display_connected_edges(D) { 
+    
+    // background svg group clears links on mousedown, so want to stop event from
+    // propagating through this circle into the background
+    if (d3.event) {
+        d3.event.stopPropagation();
+    }
+    
+    // Create only line svgs that are connected to the current node
+    link = svg_links.selectAll(".link")
+            .data(node_edges[D.id], function(d){return d.edge_id;});
+    
+    link.enter()
+        .append("line")
+        .attr("class", "link")
+        .attr("x1", function (d) { return d.source.x; })
+        .attr("y1", function (d) { return d.source.y; })
+        .attr("x2", function (d) { return d.target.x; })
+        .attr("y2", function (d) { return d.target.y; })
+        .style("stroke-width", function (d) { return 1.5*Math.sqrt(d.weight) + 0.25; });
+
+    link.exit()
+        .remove();
+    
+    // Test if nodes are in list of neighbor IDs, and if not, dim
+    svg.selectAll('.node')
+        .classed('dimmed', function(d,i){ return node_neighbors[D.id].indexOf(i) < 0; });
+    
+    // TODO: sort un-dimmed nodes to top
+}
+    
 function clicked(d) {
   if (active.node() === this) return reset();
   active.classed("active", false);
   active = d3.select(this).classed("active", true);
+
+  // set search box value to clicked author
+  document.getElementById('search').value = d.author;
 
   var bounds = calculate_neighbor_bounds(d),
       dx = bounds[1][0] - bounds[0][0],
@@ -217,6 +254,9 @@ function clicked(d) {
 function reset() {
   active.classed("active", false);
   active = d3.select(null);
+  
+  // clear out search box
+  document.getElementById('search').value = "";
 
   svg_base.transition()
       .duration(750)
@@ -225,6 +265,16 @@ function reset() {
 
 function zoomed() {
     svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+}
+
+function searchNode() {
+    //find the node
+    var selectedVal = document.getElementById('search').value;
+    if (selectedVal != "none") {
+        var node_id = author_name_id_dict[selectedVal];
+        // simulate both clicking and mousedown for the searched-for node
+        svg.select("#n_" + node_id).each(clicked).each(display_connected_edges);
+    }
 }
 
 function calculate_neighbor_bounds(d) {
