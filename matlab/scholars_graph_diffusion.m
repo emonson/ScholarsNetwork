@@ -1,31 +1,44 @@
 data_in_dir = '/Users/emonson/Data/Angela/visualization';
-data_out_dir = '/Users/emonson/Programming/ScholarsNetwork/data';
+data_out_dir = '/Users/emonson/Programming/d3/Scholars/data';
 
-edge_out_file = 'authorsim_p5_k100a50_diffusion_edges.csv';
-
-knn = 100;
-knnAuto = 50;
-% Scale values to reduce range/skew. Use 1 for no scaling
-data_power_scale = 1/2;
+dataset = 'Usam';
+% dataset = 'Authorsim';
+knn = 15;
+knnAuto = 7;
+% Scale values to reduce range/skew. .^(2^-data_power_scale)
+% use 0 for no scaling
+data_power_scale = 0;
 
 PLOT_EV = true;
 WRITE_EDGE_CSV = true;
 
-%% Load data
+% edge_out_file = 'authorsim_p0_k30a15_diffusion_edges.csv';
+edge_out_file = [lower(dataset) '_p' int2str(data_power_scale) '_k' int2str(knn) 'a' int2str(knnAuto) '_diffusion_edges.csv'];
 
-load( fullfile(data_in_dir, 'Authorsim.mat') );
-% load( fullfile(data_in_dir, 'Usam.mat') );
+%% Load data
 
 % read in integers corresponding to a department ID
 depts = csvread( fullfile(data_out_dir, 'authorsim_departments.csv'), 0, 4);
 
-% Authorsim is row vectors. This routine expects column vectors
-if data_power_scale ~= 1,
-    X0 = reshape( Authorsim(:).^data_power_scale, size(Authorsim) )';
+if strcmp( dataset, 'Usam' );
+    load( fullfile(data_in_dir, 'Usam.mat') );
+    % Authorsim is row vectors. This routine expects column vectors
+    if data_power_scale ~= 0,
+        X0 = reshape( Usam{1}(:).^(2^-data_power_scale), size(Usam{1}) )';
+    else
+        X0 = Usam{1}';
+    end
+    clear('Usam');
 else
-	X0 = Authorsim';
+    load( fullfile(data_in_dir, 'Authorsim.mat') );
+    % Authorsim is row vectors. This routine expects column vectors
+    if data_power_scale ~= 0,
+        X0 = reshape( Authorsim(:).^(2^-data_power_scale), size(Authorsim) )';
+    else
+        X0 = Authorsim';
+    end
+    clear('Authorsim');
 end
-clear('Authorsim');
 
 % Zero or original dimensionality for no pre-compression
 projectionDimension = 0;
@@ -79,18 +92,9 @@ if WRITE_EDGE_CSV,
     % d3 wants 0-based indices/IDs, so subtract 1 from all rows and edges
     % also add an edge ID for d3 keeping track of edge data elements
     % will need to add edge_id,source,target,weight header later
-    csvwrite(fullfile(data_out_dir, edge_out_file), [[0:(length(r)-1)]' r-1 c-1 v]);
+    % csvwrite(fullfile(data_out_dir, edge_out_file), [[0:(length(r)-1)]' r-1 c-1 v]);
+    fid = fopen(fullfile(data_out_dir, edge_out_file), 'w');
+	fprintf(fid, 'edge_id,source,target,weight\n');
+    fclose(fid);
+    dlmwrite(fullfile(data_out_dir, edge_out_file), [[0:(length(r)-1)]' r-1 c-1 v], '-append', 'delimiter', ',');
 end
-
-% TODO: Switch to this...
-
-% http://www.mathworks.com/matlabcentral/newsreader/view_thread/281495
-% filename = 'test.csv';
-% 
-% fid = fopen(filename, 'w');
-% fprintf(fid, 'HEADER LINE HERE...\n');
-% fclose(fid)
-% 
-% A = rand(10,5)
-% 
-% dlmwrite(filename, A, '-append', 'precision', '%.6f', 'delimiter', '\t');

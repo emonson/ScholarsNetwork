@@ -89,6 +89,7 @@ var edges_accessor = function(d) {
 // Use d3 for parsing csv directly instead of having to change it into json
 var load_nodes = function() {
     d3.csv('data/fa2_p0_k50a30.csv', depts_accessor, load_edges);
+    // d3.csv('data/fa2_usam_p0_k30a15.csv', depts_accessor, load_edges);
 };
 
 var load_edges = function(node_data) {
@@ -109,6 +110,7 @@ var load_edges = function(node_data) {
     
     // Actually start loading edge data
     d3.csv('data/authorsim_p0_k50a30_diffusion_edges.csv', edges_accessor, init_vis);
+    // d3.csv('data/usam_p0_k30a15_diffusion_edges.csv', edges_accessor, init_vis);
 };
 
 var init_vis = function(edge_data) {
