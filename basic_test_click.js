@@ -157,7 +157,7 @@ var init_vis = function(edge_data) {
 			.attr("id", function(d) {return "n_" + d.id;})
             .attr("class", "node")
             .attr("r", 4)
-            .style("fill", function (d) { return color(d.dept_id); })
+            .style("fill", function (d) { return color(d.mod_class); })
             .call(force.drag)
             .on('mousedown', display_connected_edges)
             .on('mouseover', hover_in)

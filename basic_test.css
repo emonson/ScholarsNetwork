@@ -44,6 +44,24 @@ body {
     margin: 5px;
 }
 
+#results_list {
+    width: 200;
+    height: 400;
+    overflow-y: scroll;
+    float: right;
+    vertical-align: top;
+    font-size: 9pt;
+    font-weight: regular;
+    font-family: Sans-Serif;
+    line-height: 1.3;
+}
+
+#results_list ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
 /* https://github.com/Caged/d3-tip/blob/master/examples/example-styles.css */
 
 .d3-tip {
