@@ -96,8 +96,15 @@ var load_edges = function(node_data) {
     
     // Pre-scale all xy node positions so dragging works properly
     // and construct array of names for use in search
-    x_scale.domain(d3.extent(node_data, function(d){return d.x;}));
-    y_scale.domain(d3.extent(node_data, function(d){return d.y;}));
+    var dom_sc = 0.1;
+    var x_ext = d3.extent(node_data, function(d){return d.x;});
+    var x_ext_diff = x_ext[1] - x_ext[0];
+    var x_sc_ext = [x_ext[0]-dom_sc*x_ext_diff, x_ext[1]+dom_sc*x_ext_diff];
+    var y_ext = d3.extent(node_data, function(d){return d.y;});
+    var y_ext_diff = y_ext[1] - x_ext[0];
+    var y_sc_ext = [y_ext[0]-dom_sc*y_ext_diff, y_ext[1]+dom_sc*y_ext_diff];
+    x_scale.domain(x_sc_ext);
+    y_scale.domain(y_sc_ext);
     for (var ii=0; ii<node_data.length; ii++) {
         var node = node_data[ii];
         node.x = x_scale(node.x);
@@ -157,7 +164,8 @@ var init_vis = function(edge_data) {
 			.attr("id", function(d) {return "n_" + d.id;})
             .attr("class", "node")
             .attr("r", 4)
-            .style("fill", function (d) { return color(d.mod_class); })
+            // .style("fill", function (d) { return color(d.mod_class); })
+            .style("fill", function (d) { return color(d.dept_id); })
             .call(force.drag)
             .on('mousedown', display_connected_edges)
             .on('mouseover', hover_in)
