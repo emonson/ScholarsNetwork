@@ -5,11 +5,10 @@ var width = 900,
     height = 600,
     active = d3.select(null);
 
-//Set up the colour scale
-var x_scale = d3.scale.linear().domain([-9500, 4200]).range([0, width]);
-var y_scale = d3.scale.linear().domain([-5110, 4100]).range([0, height]);
-var color = d3.scale.category20b()
-    .domain([1, 72]);
+//Set up scales for layout to screen space conversions, plus color scale for departments or clusters
+var x_scale = d3.scale.linear().range([0, width]);
+var y_scale = d3.scale.linear().range([0, height]);
+var color = d3.scale.category20b().domain([1, 72]);
     
 //Set up the force layout
 var force = d3.layout.force()
@@ -23,23 +22,25 @@ var zoom = d3.behavior.zoom()
     .scaleExtent([1, 8])
     .on("zoom", zoomed);
     
-//Append a SVG to the body of the html page. Assign this SVG as an object to svg
+// Base visualization SVG element
 var svg_base = d3.select("#network_vis").append("svg")
     .attr("width", width)
     .attr("height", height);
-    
+
+// Need this rect overlay for interaction to work properly
 svg_base.append("rect")
     .attr("class", "overlay")
     .attr("width", width)
     .attr("height", height);
 
-var svg = svg_base.append("g");
 // When links were drawn in front (in the same group as nodes), clicking would
 // turn on links, but zoom to bounds would get interrupted if the click was placed
 // where links eventually showed up... Not sure why, but works better if links are drawn
 // in their own group behind.
+var svg = svg_base.append("g");
 var svg_links = svg.append("g");
 
+// Set up interaction on main SVG area
 svg_base
     .call(zoom)
     .call(zoom.event)
@@ -49,10 +50,6 @@ svg_base
             d3.selectAll(".node").classed('dimmed', false);
             reset();
         });
-
-function zoomed() {
-    svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-}
 
 //Read the data from a json file
 var graph = {};
