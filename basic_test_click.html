@@ -3,23 +3,21 @@
   <head>
     <meta charset="utf-8">
 
-    <!-- 
-    http://www.coppelia.io/2014/07/an-a-to-z-of-extra-features-for-the-d3-force-layout/
-     -->
-    <title>basic d3 network test</title>
+    <title>Scholars@Duke author network</title>
     
-    <link rel="stylesheet" href="basic_test.css">
-
-    <!-- load D3js -->
+    <!-- d3 -->
     <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
  
-    <!-- load d3 tooltips library -->
+    <!-- d3 tooltips -->
     <script type='text/javascript' src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"> </script>
 
+    <!-- jQuery -->
     <script type='text/javascript' src="http://code.jquery.com/jquery-2.1.3.min.js"> </script>
     <script type='text/javascript' src="http://code.jquery.com/ui/1.11.2/jquery-ui.min.js"> </script>
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
     
+    <link rel="stylesheet" href="basic_test.css">
+
   </head>
   <body>
   
@@ -29,18 +27,8 @@
         <button type="button" onclick="searchNode()">Search</button>
     </div>
     
-    <!-- Results list -->
-<!-- 
-    <div id="results_list">
-        <ul class="list-group">
-            <li class="list-group-item"><span style="color: #900">• </span>Cras justo odio</li>
-            <li class="list-group-item"><span style="color: #900">• </span>Dapibus ac facilisis in</li>
-            <li class="list-group-item"><span style="color: #900">• </span>Morbi leo risus</li>
-            <li class="list-group-item"><span style="color: #900">• </span>Porta ac consectetur ac</li>
-            <li class="list-group-item"><span style="color: #900">• </span>Vestibulum at eros</li>
-        </ul>
-    </div>
- -->
+    <!-- Info panel about selected nodes -->
+    <div id="info_panel"></div>
     
     <!-- Network visualization -->
     <div id="network_vis"></div>

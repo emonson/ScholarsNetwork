@@ -3,6 +3,18 @@
 /* this ends up controlling the jQuery UI font sizes */
 body {
     font-size: 10px;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* override jQuery-ui */
+.ui-widget button {
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.ui-widget input {
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.ui-widget li {
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .node {
@@ -40,26 +52,66 @@ body {
     margin: 5px;
 }
 
-#network_vis {
-    margin: 5px;
+#search {
+    width: 150px;
 }
 
-#results_list {
-    width: 200;
-    height: 400;
+#network_vis {
+    margin: 5px;
+    display: block;
+}
+
+#info_panel {
+    width: 250px;
+    max-height: 600px;
     overflow-y: scroll;
+    padding: 6px;
+    display: block;
     float: right;
     vertical-align: top;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 9pt;
     font-weight: regular;
-    font-family: Sans-Serif;
     line-height: 1.3;
 }
 
-#results_list ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
+.info_container {
+    vertical-align: top;
+    text-overflow: ellipsis;
+}
+
+.info_header {
+    color: #222;
+    font-size: 14pt;
+}
+
+.info_title {
+    color: #444;
+    font-size: 10pt;
+    font-weight: bold;
+    margin-top: 6px;
+}
+
+.info_data_element {
+    cursor: pointer;
+}
+
+.info_data_element_contents {
+    position: relative;
+    padding-left: 18px;
+}
+
+.info_data_element_circle {
+    border-style: solid; 
+    border-width: 0.25px; 
+    border-color: #FFF;
+    display: inline-block; 
+    height: 12px; 
+    left: 0px; 
+    position: absolute; 
+    width: 12px; 
+    top: 0px; 
+    -webkit-border-radius: 12px;
 }
 
 /* https://github.com/Caged/d3-tip/blob/master/examples/example-styles.css */
@@ -67,7 +119,7 @@ body {
 .d3-tip {
   line-height: 1.3;
   font-weight: regular;
-  font-family: Sans-Serif;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 9pt;
   padding: 6px;
   background: rgba(0, 0, 0, 0.8);
