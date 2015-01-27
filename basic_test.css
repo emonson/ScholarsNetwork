@@ -8,13 +8,13 @@ body {
 
 /* override jQuery-ui */
 .ui-widget button {
-    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 .ui-widget input {
-    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 .ui-widget li {
-    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .node {
@@ -112,6 +112,11 @@ body {
     width: 12px; 
     top: 0px; 
     -webkit-border-radius: 12px;
+}
+
+.info_data_element_circle.hovered {
+    border-width: 1pt; 
+    border-color: #000;
 }
 
 /* https://github.com/Caged/d3-tip/blob/master/examples/example-styles.css */

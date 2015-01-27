@@ -149,9 +149,11 @@ var init_vis = function(edge_data) {
 
     // Create data structure to hold references to neighboring nodes and links
     var n_nodes = graph.nodes.length;
+    // Create arrays
     node_neighbors = new Array(n_nodes);
     node_neighbor_ids = new Array(n_nodes);
     node_edges = new Array(n_nodes);
+    // Create arrays of arrays
     for (var ii=0; ii<n_nodes; ii++) {
         // include self id as neighbor for click highlighting
         node_neighbor_ids[ii] = [ii];
@@ -159,6 +161,7 @@ var init_vis = function(edge_data) {
         node_neighbors[ii] = [];
         node_edges[ii] = [];
     }
+    // Add values to arrays of arrays
     graph.links.forEach(function(d,i){
         // node neighbor IDs are just IDs
         node_neighbor_ids[d.source.id].push(d.target.id);
@@ -170,6 +173,23 @@ var init_vis = function(edge_data) {
         node_edges[d.source.id].push(d);
         node_edges[d.target.id].push(d);
     });
+    // Sort node neighbors by closeness to root node
+    for (var ii=0; ii<n_nodes; ii++) {
+        node_neighbor_ids[ii].sort( function(a,b) { 
+                                            var ax = graph.nodes[a].x, ay = graph.nodes[a].y;
+                                            var bx = graph.nodes[b].x, by = graph.nodes[b].y;
+                                            var ix = graph.nodes[ii].x, iy = graph.nodes[ii].y;
+                                            var a_dist = Math.sqrt((ax-ix)*(ax-ix) + (ay-iy)*(ay-iy));
+                                            var b_dist = Math.sqrt((bx-ix)*(bx-ix) + (by-iy)*(by-iy));
+                                            return a_dist - b_dist; } );
+        node_neighbors[ii].sort( function(a,b) { 
+                                            var ax = a.x, ay = a.y;
+                                            var bx = b.x, by = b.y;
+                                            var ix = graph.nodes[ii].x, iy = graph.nodes[ii].y;
+                                            var a_dist = Math.sqrt((ax-ix)*(ax-ix) + (ay-iy)*(ay-iy));
+                                            var b_dist = Math.sqrt((bx-ix)*(bx-ix) + (by-iy)*(by-iy));
+                                            return a_dist - b_dist; } );;
+    }
     
     // Search
     $(function () {
@@ -230,15 +250,16 @@ svg_base.call(tip);
 
 function hover_in(d) {
     d3.select(this).classed("hovered", true);
+    d3.select("#in_" + d.id).classed("hovered", true);
     tip.show(d);
 }
 
 function hover_out(d) {
     d3.select(this).classed("hovered", false);
+    d3.select("#in_" + d.id).classed("hovered", false);
     tip.hide(d);
 }
 
-    // TODO: hover also searches for ID in info_panel and highlights
 function info_hover_in(d) {
     d3.select("#in_" + d.id).classed("hovered", true);
     d3.select("#n_" + d.id).classed("hovered", true);
@@ -329,10 +350,6 @@ function update_info_panel(D) {
                 .attr("id", function(d){ return "in_" + d.id; })
                 .style("background-color", function(d){return color(d.dept_id);});
         
-    // TODO: sort by close connection (or weight)
-    // TODO: hover highlight in graph
-    // TODO: click select that name
-    // TODO: take out self-connection
 }   
     
 // --------------------------
