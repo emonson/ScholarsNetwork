@@ -9,7 +9,7 @@
 // Variable initialization
 
 //Constants for the SVG
-var width = 700,
+var width = 800,
     height = 600,
     active = d3.select(null);
 
@@ -324,10 +324,15 @@ function update_info_panel(D) {
     info_panel.append("div")
                 .attr("class", "info_header")
                 .html(D.author);
+    // Department
+    info_panel.append("div")
+                .attr("class", "info_data_subheader")
+                .html(D.dept);
+                
     // Degree
     info_panel.append("div")
                 .attr("class", "info_data_subheader")
-                .html("neighbors " + node_neighbors[D.id].length);
+                .html("neighbors: " + node_neighbors[D.id].length);             
     
     // Connections list
     info_panel.append("div")
