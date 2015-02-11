@@ -1,11 +1,11 @@
-data_in_dir = '/Users/emonson/Dropbox/ScholarsData/orig_pieces';
-data_out_dir = '/Users/emonson/Dropbox/ScholarsData';
+data_dir = '/Users/emonson/Dropbox/ScholarsData/newresults4visual';
 
-dataset = 'Usam3';
-% dataset = 'Usam';
-% dataset = 'Authorsim';
-knn = 15;
-knnAuto = 7;
+dataset = 'forums_topics';
+% dataset = 'authors_topics';
+% dataset = 'authors_authors';
+
+knn = 30;
+knnAuto = 15;
 % Scale values to reduce range/skew. .^(2^-data_power_scale)
 % use 0 for no scaling
 data_power_scale = 0;
@@ -21,35 +21,34 @@ edge_out_file = [lower(dataset) '_p' int2str(data_power_scale) '_k' int2str(knn)
 %% Load data
 
 % read in integers corresponding to a department ID
-depts = csvread( fullfile(data_out_dir, 'authorsim_departments.csv'), 0, 4);
+depts = csvread( fullfile(data_dir, 'authors_departments_20150210.csv'), 0, 4);
+load( fullfile(data_dir, 'tdresults.mat') );
 
-if strcmp( dataset, 'Usam' );
-    load( fullfile(data_in_dir, 'Usam.mat') );
-    % Authorsim is row vectors. This routine expects column vectors
+% Note: topic matrices are row vectors. Graph diffusion expects column vectors
+if strcmp( dataset, 'authors_topics' ),
+    at = U{1} .* repmat(lambda, size(U{1},1), 1);
     if data_power_scale ~= 0,
-        X0 = reshape( Usam{1}(:).^(2^-data_power_scale), size(Usam{1}) )';
+        X0 = reshape( at(:).^(2^-data_power_scale), size(at) )';
     else
-        X0 = Usam{1}';
+        X0 = at';
     end
-    clear('Usam');
-elseif strcmp( dataset, 'Usam3' );
-    load( fullfile(data_in_dir, 'Usam.mat') );
-    % Authorsim is row vectors. This routine expects column vectors
+elseif strcmp( dataset, 'forums_topics' ),
+    ft = U{3} .* repmat(lambda, size(U{3},1), 1);
     if data_power_scale ~= 0,
-        X0 = reshape( Usam{3}(:).^(2^-data_power_scale), size(Usam{3}) )';
+        X0 = reshape( ft(:).^(2^-data_power_scale), size(ft) )';
     else
-        X0 = Usam{3}';
+        X0 = ft';
     end
-    clear('Usam');
+elseif strcmp( dataset, 'authors_authors' ),
+    at = U{1} .* repmat(lambda, size(U{1},1), 1);
+    aa = at * at';
+    if data_power_scale ~= 0,
+        X0 = reshape( aa(:).^(2^-data_power_scale), size(aa) )';
+    else
+        X0 = aa';
+    end
 else
-    load( fullfile(data_in_dir, 'Authorsim.mat') );
-    % Authorsim is row vectors. This routine expects column vectors
-    if data_power_scale ~= 0,
-        X0 = reshape( Authorsim(:).^(2^-data_power_scale), size(Authorsim) )';
-    else
-        X0 = Authorsim';
-    end
-    clear('Authorsim');
+    fprintf('invalid dataset\n');
 end
 
 % Use SVD to reduce dimensionality?
@@ -102,8 +101,8 @@ if WRITE_EDGE_CSV,
     % also add an edge ID for d3 keeping track of edge data elements
     % will need to add edge_id,source,target,weight header later
     % csvwrite(fullfile(data_out_dir, edge_out_file), [[0:(length(r)-1)]' r-1 c-1 v]);
-    fid = fopen(fullfile(data_out_dir, edge_out_file), 'w');
+    fid = fopen(fullfile(data_dir, edge_out_file), 'w');
 	fprintf(fid, 'edge_id,source,target,weight\n');
     fclose(fid);
-    dlmwrite(fullfile(data_out_dir, edge_out_file), [[0:(length(r)-1)]' r-1 c-1 v], '-append', 'delimiter', ',');
+    dlmwrite(fullfile(data_dir, edge_out_file), [[0:(length(r)-1)]' r-1 c-1 v], '-append', 'delimiter', ',');
 end
