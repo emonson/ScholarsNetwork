@@ -1,16 +1,20 @@
 data_dir = '~/Dropbox/ScholarsData/newresults4visual';
 edge_sqrt_out_file = 'forum_forum_norm_sqrt_eges.csv';
 edge_bin_out_file = 'forum_forum_norm_bin_eges.csv';
-WRITE_EDGE_CSV = true;
+WRITE_EDGE_CSV = false;
 
 % Authors-forums counts matrix
 load( fullfile(data_dir, 'avmat_normalized_20150215.mat') );
 
 % One version scaled with square root to use counts as weight
-FF_sqrt = sqrt(auth_forums_norm' * auth_forums_norm);
+FF_sqrt = sparse(sqrt(auth_forums_norm' * auth_forums_norm));
+[S,C] = graphconncomp(FF_sqrt);
+
+fprintf('FF has %d components with %d/%d (%f) nodes in the largest\n', S, sum(C==1), length(C), sum(C==1)/length(C));
+
 % And one version starting with binary matrix
 auth_forums_bin = double(auth_forums_norm > 0);
-FF_bin = auth_forums_bin' * auth_forums_bin;
+FF_bin = sparse(auth_forums_bin' * auth_forums_bin);
 
 % Write out CSV of graph edge specifications
 if WRITE_EDGE_CSV,

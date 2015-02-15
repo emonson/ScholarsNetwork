@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Scholars@Duke forums network</title>
+    
+    <!-- d3 -->
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+ 
+    <!-- d3 tooltips -->
+    <script type='text/javascript' src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"> </script>
+
+    <!-- jQuery -->
+    <script type='text/javascript' src="http://code.jquery.com/jquery-2.1.3.min.js"> </script>
+    <script type='text/javascript' src="http://code.jquery.com/ui/1.11.2/jquery-ui.min.js"> </script>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+    
+    <link rel="stylesheet" href="scholars_style.css">
+
+  </head>
+  <body>
+  
+    <!-- Search box -->
+    <div id="search_widget" class="ui-widget">
+        <input id="search">
+        <button type="button" onclick="searchNode()">Search</button>
+    </div>
+    
+    <!-- Info panel about selected nodes -->
+    <div id="info_panel"></div>
+    
+    <!-- Network visualization -->
+    <div id="network_vis"></div>
+    
+    <!-- Visualization (d3) code -->
+    <script src="forums_network_prototype.js"></script>
+    
+  </body>
+</html>
