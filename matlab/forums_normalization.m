@@ -1,11 +1,11 @@
 data_dir = '~/Dropbox/ScholarsData/newresults4visual';
-forums_out_filename = 'forums_normalized_20150215.tsv';
-matrix_out_filename = 'avmat_normalized_20150215.mat';
+forums_out_filename = 'forums_normalized_20150217.tsv';
+matrix_out_filename = 'avmat_normalized_20150217.mat';
 WRITE_OUTPUT_FILES = true;
 
 % Angela's data on how to combine forums to normalize names
 % [id, forum, modifiedid...] which I imported from the Excel file
-load( fullfile(data_dir,'forums_norm_20150210.mat') );
+load( fullfile(data_dir, 'forums_norm_20150210.mat') );
 % Authors-forums counts matrix
 load( fullfile(data_dir, 'avmat.mat') );
 
@@ -36,14 +36,17 @@ auth_forums_norm(~unmodified,:) = [];
 forums_norm(~unmodified) = [];
 old_id(~unmodified) = [];
 
+% Sum up number of publications per forum
+n_pubs = sum(auth_forums_norm,2);
+
 if WRITE_OUTPUT_FILES,
     % Write out TSV of normalized forums 
     n_forums = length(forums_norm);
     new_id = 0:(n_forums-1);
     fid = fopen( fullfile(data_dir, forums_out_filename), 'w');
-	fprintf(fid, 'id\torig_id\tforum\n');
+	fprintf(fid, 'id\torig_id\tpub_count\tforum\n');
     for ii = 1:n_forums,
-        fprintf(fid, '%d\t%d\t%s\n', new_id(ii), old_id(ii), forums_norm{ii});
+        fprintf(fid, '%d\t%d\t%d\t%s\n', new_id(ii), old_id(ii), n_pubs(ii), forums_norm{ii});
     end
     fclose(fid);
     
