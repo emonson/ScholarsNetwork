@@ -4,6 +4,8 @@
 //   https://github.com/Caged/d3-tip
 // Zoom to bounds
 //   http://bl.ocks.org/mbostock/9656675
+// Info panel style
+//   http://d3plus.org/
 
 // -------------------------
 // Variable initialization
