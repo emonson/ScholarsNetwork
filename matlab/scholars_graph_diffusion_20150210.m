@@ -1,11 +1,11 @@
 data_dir = '/Users/emonson/Dropbox/ScholarsData/newresults4visual';
 
-dataset = 'forums_topics';
-% dataset = 'authors_topics';
+% dataset = 'forums_topics';
+dataset = 'authors_topics';
 % dataset = 'authors_authors';
 
-knn = 30;
-knnAuto = 15;
+knn = 50;
+knnAuto = 30;
 % Scale values to reduce range/skew. .^(2^-data_power_scale)
 % use 0 for no scaling
 data_power_scale = 0;
@@ -16,7 +16,7 @@ PLOT_EV = false;
 WRITE_EDGE_CSV = true;
 
 % edge_out_file = 'authorsim_p0_k30a15_diffusion_edges.csv';
-edge_out_file = [lower(dataset) '_p' int2str(data_power_scale) '_k' int2str(knn) 'a' int2str(knnAuto) '_diffusion_edges.csv'];
+edge_out_file = [lower(dataset) '_lscaled_p' int2str(data_power_scale) '_k' int2str(knn) 'a' int2str(knnAuto) '_diffusion_edges.csv'];
 
 %% Load data
 
@@ -24,23 +24,28 @@ edge_out_file = [lower(dataset) '_p' int2str(data_power_scale) '_k' int2str(knn)
 depts = csvread( fullfile(data_dir, 'authors_departments_20150210.csv'), 0, 4);
 load( fullfile(data_dir, 'tdresults.mat') );
 
+% Want to scale by lambda and reduce dimensionality by only including
+% high-lambda topicsj
+% NOTE: not sure this is a good cutoff value for all datasets!
+high_topics = lambda > 1.0;
+
 % Note: topic matrices are row vectors. Graph diffusion expects column vectors
 if strcmp( dataset, 'authors_topics' ),
-    at = U{1} .* repmat(lambda, size(U{1},1), 1);
+    at = U{1}(:,high_topics) .* repmat(lambda(high_topics), size(U{1},1), 1);
     if data_power_scale ~= 0,
         X0 = reshape( at(:).^(2^-data_power_scale), size(at) )';
     else
         X0 = at';
     end
 elseif strcmp( dataset, 'forums_topics' ),
-    ft = U{3} .* repmat(lambda, size(U{3},1), 1);
+    ft = U{3}(:,high_topics) .* repmat(lambda(high_topics), size(U{3},1), 1);
     if data_power_scale ~= 0,
         X0 = reshape( ft(:).^(2^-data_power_scale), size(ft) )';
     else
         X0 = ft';
     end
 elseif strcmp( dataset, 'authors_authors' ),
-    at = U{1} .* repmat(lambda, size(U{1},1), 1);
+    at = U{1}(:,high_topics) .* repmat(lambda(high_topics), size(U{1},1), 1);
     aa = at * at';
     if data_power_scale ~= 0,
         X0 = reshape( aa(:).^(2^-data_power_scale), size(aa) )';
