@@ -1,12 +1,13 @@
 data_dir = '/Users/emonson/Dropbox/ScholarsData/newresults4visual';
 
 % dataset = 'forums_topics_lscaled';
-dataset = 'authors_topics';
+% dataset = 'authors_topics';
 % dataset = 'authors_topics_lscaled';
+dataset = 'authors_topics_lallscaled';
 % dataset = 'authors_authors_lscaled';
 
-knn = 30;
-knnAuto = 15;
+knn = 15;
+knnAuto = 7;
 % Scale values to reduce range/skew. .^(2^-data_power_scale)
 % use 0 for no scaling
 data_power_scale = 0;
@@ -33,6 +34,13 @@ high_topics = lambda > 1.0;
 % Note: topic matrices are row vectors. Graph diffusion expects column vectors
 if strcmp( dataset, 'authors_topics_lscaled' ),
     at = U{1}(:,high_topics) .* repmat(lambda(high_topics), size(U{1},1), 1);
+    if data_power_scale ~= 0,
+        X0 = reshape( at(:).^(2^-data_power_scale), size(at) )';
+    else
+        X0 = at';
+    end
+elseif strcmp( dataset, 'authors_topics_lallscaled' ),
+    at = U{1} .* repmat(lambda, size(U{1},1), 1);
     if data_power_scale ~= 0,
         X0 = reshape( at(:).^(2^-data_power_scale), size(at) )';
     else
