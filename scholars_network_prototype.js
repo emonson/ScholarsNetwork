@@ -18,7 +18,7 @@ var width = 800,
 //Set up scales for layout to screen space conversions, plus color scale for departments or clusters
 var x_scale = d3.scale.linear().range([0, width]);
 var y_scale = d3.scale.linear().range([0, height]);
-var color = d3.scale.category20b().domain([1, 72]);
+var color = d3.scale.category20b();
     
 // Data structure that d3 will use for "layout"
 var graph = {};
@@ -211,7 +211,7 @@ var init_vis = function(edge_data) {
             .attr("class", "node")
             .attr("r", 4)
             // .style("fill", function (d) { return color(d.mod_class); })
-            .style("fill", function (d) { return color(d.dept_id); })
+            .style("fill", color_node)
             .call(force.drag)
             .on('mousedown', display_connected_edges)
             .on('mouseover', hover_in)
@@ -242,12 +242,35 @@ load_nodes();
 
 
 // --------------------------
+// KEY FIELD Functions for Color, Tooltip Info, etc, that need changes with new data
+
+function color_node(d,i) {
+    return color(d.dept_id);
+}
+
+function generate_tooltip_html(d) {
+    return  "<strong>"+ d.author + "</strong><br />" + d.dept;
+}
+
+function generate_info_header_html(d) {
+    return d.author;
+}
+
+function generate_info_subheader_html(d) {
+    return d.dept;
+}
+
+function generate_info_list_text(d) { 
+    return d.author;
+}
+
+// --------------------------
 // Tooltips (hover)
 
 var tip = d3.tip()
     .attr('class', 'd3-tip')
     .offset([-8, 0])
-    .html(function (d) { return  "<strong>"+ d.author + "</strong><br />" + d.dept; });
+    .html( generate_tooltip_html );
 svg_base.call(tip);
 
 function hover_in(d) {
@@ -325,11 +348,11 @@ function update_info_panel(D) {
     // Author name
     info_panel.append("div")
                 .attr("class", "info_header")
-                .html(D.author);
+                .html( generate_info_header_html(D) );
     // Department
     info_panel.append("div")
                 .attr("class", "info_data_subheader")
-                .html(D.dept);
+                .html( generate_info_subheader_html(D) );
                 
     // Degree
     info_panel.append("div")
@@ -351,11 +374,11 @@ function update_info_panel(D) {
                 .on('mouseout', info_hover_out)
             .append("div")
                 .attr("class", "info_data_element_contents")
-                .text(function(d){ return d.author; })
+                .text( generate_info_list_text )
             .append("div")
                 .attr("class", "info_data_element_circle")
                 .attr("id", function(d){ return "in_" + d.id; })
-                .style("background-color", function(d){return color(d.dept_id);});
+                .style("background-color", color_node);
         
 }   
     
