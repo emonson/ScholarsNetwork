@@ -19,7 +19,10 @@ var width = 800,
 var x_scale = d3.scale.linear().range([0, width]);
 var y_scale = d3.scale.linear().range([0, height]);
 var color = d3.scale.category20b();
-    
+
+var nodes_filename = "data/openord_k15_school.gdf";
+var edges_filename = "data/authors_topics_lscaled_p0_k15a7_diffusion_edges.csv";
+
 // Data structure that d3 will use for "layout"
 var graph = {};
 
@@ -85,8 +88,8 @@ svg_base
 var depts_accessor = function(d) { 
     // "unary plus" is the fastest way to change from a string to a number
     d.id = +d.id;
-    d.dept_id = +d.dept_id;
-    d.mod_class = +d.mod_class;
+    // d.dept_id = +d.dept_id;
+    // d.mod_class = +d.mod_class;
     d.x = +d.x;
     d.y = +d.y;
     // keep nodes from moving in d3 layout
@@ -107,7 +110,7 @@ var edges_accessor = function(d) {
 // Use d3 for parsing csv directly instead of having to change it into json
 var load_nodes = function() {
     // d3.csv('data/fa2_p0_k50a30.csv', depts_accessor, load_edges);
-    d3.csv('data/fa2_usam_p0_k30a15.csv', depts_accessor, load_edges);
+    d3.csv(nodes_filename, depts_accessor, load_edges);
 };
 
 // This gets called after CSV node data is loaded (asynchronously)
@@ -124,19 +127,23 @@ var load_edges = function(node_data) {
     var y_sc_ext = [y_ext[0]-dom_sc*y_ext_diff, y_ext[1]+dom_sc*y_ext_diff];
     x_scale.domain(x_sc_ext);
     y_scale.domain(y_sc_ext);
+    // Create a set of attributes for coloring
+    var color_att_set = d3.set([]);
     for (var ii=0; ii<node_data.length; ii++) {
         var node = node_data[ii];
         node.x = x_scale(node.x);
         node.y = y_scale(node.y);
+        color_att_set.add( color_attribute_field );
         author_names.push(node.author);
         author_name_id_dict[node.author] = node.id;
     }
+    color.domain( color_att_set.values() );
     graph.nodes = node_data;
     author_names = author_names.sort();
     
     // Actually start loading edge data
     // d3.csv('data/authorsim_p0_k50a30_diffusion_edges.csv', edges_accessor, init_vis);
-    d3.csv('data/usam_p0_k30a15_diffusion_edges.csv', edges_accessor, init_vis);
+    d3.csv( edges_filename, edges_accessor, init_vis);
 };
 
 // This gets called after CSV edge data is loaded (asynchronously)
@@ -244,12 +251,16 @@ load_nodes();
 // --------------------------
 // KEY FIELD Functions for Color, Tooltip Info, etc, that need changes with new data
 
+function color_attribute_field(d) {
+    return d.school;
+}
+
 function color_node(d,i) {
-    return color(d.dept_id);
+    return color( color_attribute_field(d) );
 }
 
 function generate_tooltip_html(d) {
-    return  "<strong>"+ d.author + "</strong><br />" + d.dept;
+    return  "<strong>"+ d.author + "</strong><br />" + d.department;
 }
 
 function generate_info_header_html(d) {
@@ -257,7 +268,7 @@ function generate_info_header_html(d) {
 }
 
 function generate_info_subheader_html(d) {
-    return d.dept;
+    return d.department;
 }
 
 function generate_info_list_text(d) { 

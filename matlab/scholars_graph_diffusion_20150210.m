@@ -1,11 +1,12 @@
 data_dir = '/Users/emonson/Dropbox/ScholarsData/newresults4visual';
 
-% dataset = 'forums_topics';
+% dataset = 'forums_topics_lscaled';
 dataset = 'authors_topics';
-% dataset = 'authors_authors';
+% dataset = 'authors_topics_lscaled';
+% dataset = 'authors_authors_lscaled';
 
-knn = 50;
-knnAuto = 30;
+knn = 30;
+knnAuto = 15;
 % Scale values to reduce range/skew. .^(2^-data_power_scale)
 % use 0 for no scaling
 data_power_scale = 0;
@@ -16,7 +17,7 @@ PLOT_EV = false;
 WRITE_EDGE_CSV = true;
 
 % edge_out_file = 'authorsim_p0_k30a15_diffusion_edges.csv';
-edge_out_file = [lower(dataset) '_lscaled_p' int2str(data_power_scale) '_k' int2str(knn) 'a' int2str(knnAuto) '_diffusion_edges.csv'];
+edge_out_file = [lower(dataset) '_p' int2str(data_power_scale) '_k' int2str(knn) 'a' int2str(knnAuto) '_diffusion_edges.csv'];
 
 %% Load data
 
@@ -30,21 +31,28 @@ load( fullfile(data_dir, 'tdresults.mat') );
 high_topics = lambda > 1.0;
 
 % Note: topic matrices are row vectors. Graph diffusion expects column vectors
-if strcmp( dataset, 'authors_topics' ),
+if strcmp( dataset, 'authors_topics_lscaled' ),
     at = U{1}(:,high_topics) .* repmat(lambda(high_topics), size(U{1},1), 1);
     if data_power_scale ~= 0,
         X0 = reshape( at(:).^(2^-data_power_scale), size(at) )';
     else
         X0 = at';
     end
-elseif strcmp( dataset, 'forums_topics' ),
+elseif strcmp( dataset, 'authors_topics' ),
+    at = U{1};
+    if data_power_scale ~= 0,
+        X0 = reshape( at(:).^(2^-data_power_scale), size(at) )';
+    else
+        X0 = at';
+    end
+elseif strcmp( dataset, 'forums_topics_lscaled' ),
     ft = U{3}(:,high_topics) .* repmat(lambda(high_topics), size(U{3},1), 1);
     if data_power_scale ~= 0,
         X0 = reshape( ft(:).^(2^-data_power_scale), size(ft) )';
     else
         X0 = ft';
     end
-elseif strcmp( dataset, 'authors_authors' ),
+elseif strcmp( dataset, 'authors_authors_lscaled' ),
     at = U{1}(:,high_topics) .* repmat(lambda(high_topics), size(U{1},1), 1);
     aa = at * at';
     if data_power_scale ~= 0,
