@@ -3,7 +3,8 @@ data_dir = '/Users/emonson/Dropbox/ScholarsData/newresults4visual';
 % dataset = 'forums_topics_lscaled';
 % dataset = 'authors_topics';
 % dataset = 'authors_topics_lscaled';
-dataset = 'authors_topics_lallscaled';
+% dataset = 'authors_topics_lallscaled';
+dataset = 'a_t_midTopicSum';
 % dataset = 'authors_authors_lscaled';
 
 knn = 15;
@@ -41,6 +42,15 @@ if strcmp( dataset, 'authors_topics_lscaled' ),
     end
 elseif strcmp( dataset, 'authors_topics_lallscaled' ),
     at = U{1} .* repmat(lambda, size(U{1},1), 1);
+    if data_power_scale ~= 0,
+        X0 = reshape( at(:).^(2^-data_power_scale), size(at) )';
+    else
+        X0 = at';
+    end
+elseif strcmp( dataset, 'a_t_midTopicSum' ),
+    [YY,II] = sort(sum(U{1},2),'ascend');
+    idx_slice = II(500:2000);
+    at = U{1}(idx_slice,:) .* repmat(lambda, length(idx_slice), 1);
     if data_power_scale ~= 0,
         X0 = reshape( at(:).^(2^-data_power_scale), size(at) )';
     else
