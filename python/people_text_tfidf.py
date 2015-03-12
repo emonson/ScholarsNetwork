@@ -94,11 +94,58 @@ tfs = tfidf.fit_transform(text_list)
 print 'done'
 
 # Calculate author-author simiarity
-aa = tfs * tfs.transpose()
-(r,c) = aa.nonzero()
-v = aa.data
+# aa = tfs * tfs.transpose()
+# (r,c) = aa.nonzero()
+# v = aa.data
+# 
+# similarity_threshold = 0.0001
+# for ii in range(len(v)):
+#     if v[ii] > similarity_threshold:
+#         pass
+#         # Write out CSV
+#         # write r[ii], c[ii], v[ii]
+# 
+#         # Write out scholars ids
+#         # write scholars_ids[ii]
 
-similarity_threshold = 0.0001
+# Do LSA on TFIDF values
+# This truncated SVD works efficiently on sparse matrices (randomized default)
+from sklearn.decomposition import TruncatedSVD
+
+svd = TruncatedSVD(n_components=200)
+svd.fit(tfs.transpose())
+print svd.explained_variance_ratio_.sum()
+
+# Find nearest neighbors graph on PCA reduced dimensionality model
+# Each person ends up being a row
+from sklearn.neighbors import kneighbors_graph
+
+# svd.components_.shape == (n_components, n_scholars), which is why we need to transpose() here
+A = kneighbors_graph(svd.components_.transpose(), n_neighbors=20, mode='distance')
+
+# Can get the nonzero distances by 
+# A.getrow(0).data
+# and neighbor indices (second element of tuple is column indices)
+# A.getrow(0).nonzero()[1]
+# so can figure out j-th distance for scaling (auto-tune)
+# dists = np.zeros([4091,20])
+# for ii in range(4091):
+#     dists[ii,:] = A.getrow(ii).data
+# dists.sort(axis=1)
+# sc = dists[:,7]
+# http://stackoverflow.com/questions/3247775/how-to-elementwise-multiply-a-scipy-sparse-matrix-by-a-broadcasted-dense-1d-arra
+# import numpy as np
+# import scipy.sparse as ssp
+# d = ssp.lil_matrix((4091,4091))
+# d.setdiag(sc)
+# A = A*d
+# NOTE: Mauro's default is then to symmetrize by W+Wt
+# v = A.data
+# weights = np.exp(-v*v)
+
+(r,c) = A.nonzero()
+v = A.data
+
 for ii in range(len(v)):
     if v[ii] > similarity_threshold:
         pass
@@ -107,5 +154,4 @@ for ii in range(len(v)):
 
         # Write out scholars ids
         # write scholars_ids[ii]
-
 
