@@ -93,6 +93,8 @@ print 'tfidf calc'
 tfs = tfidf.fit_transform(text_list)
 print 'done'
 
+n_scholars, n_terms = tfs.shape
+
 # Calculate author-author simiarity
 # aa = tfs * tfs.transpose()
 # (r,c) = aa.nonzero()
@@ -111,47 +113,51 @@ print 'done'
 # Do LSA on TFIDF values
 # This truncated SVD works efficiently on sparse matrices (randomized default)
 from sklearn.decomposition import TruncatedSVD
+from sklearn.neighbors import kneighbors_graph
+import scipy.sparse as ssp
+import numpy as np
 
-svd = TruncatedSVD(n_components=200)
+n_singvals = 200
+
+svd = TruncatedSVD(n_components=n_singvals)
 svd.fit(tfs.transpose())
 print svd.explained_variance_ratio_.sum()
 
 # Find nearest neighbors graph on PCA reduced dimensionality model
 # Each person ends up being a row
-from sklearn.neighbors import kneighbors_graph
+
+n_nn = 20
+nn_autotune = 10
 
 # svd.components_.shape == (n_components, n_scholars), which is why we need to transpose() here
-A = kneighbors_graph(svd.components_.transpose(), n_neighbors=20, mode='distance')
+W = kneighbors_graph(svd.components_.transpose(), n_neighbors=n_nn, mode='distance')
 
 # Can get the nonzero distances by 
 # A.getrow(0).data
 # and neighbor indices (second element of tuple is column indices)
 # A.getrow(0).nonzero()[1]
 # so can figure out j-th distance for scaling (auto-tune)
-# dists = np.zeros([4091,20])
-# for ii in range(4091):
-#     dists[ii,:] = A.getrow(ii).data
-# dists.sort(axis=1)
-# sc = dists[:,7]
+dists = np.zeros( (n_scholars, n_nn) )
+for ii in range(n_scholars):
+    dists[ii,:] = W.getrow(ii).data
+dists.sort(axis=1)
+sc = 1/dists[:,nn_autotune]
 # http://stackoverflow.com/questions/3247775/how-to-elementwise-multiply-a-scipy-sparse-matrix-by-a-broadcasted-dense-1d-arra
-# import numpy as np
-# import scipy.sparse as ssp
-# d = ssp.lil_matrix((4091,4091))
-# d.setdiag(sc)
-# A = A*d
-# NOTE: Mauro's default is then to symmetrize by W+Wt
+
+d = ssp.lil_matrix( (n_scholars, n_scholars) )
+d.setdiag(sc)
+W = W*d
+W = W + W.transpose()
+
+# TODO?: Mauro's default is then to symmetrize by W+Wt
+# (r,c) = A.nonzero()
 # v = A.data
 # weights = np.exp(-v*v)
-
-(r,c) = A.nonzero()
-v = A.data
-
-for ii in range(len(v)):
-    if v[ii] > similarity_threshold:
-        pass
-        # Write out CSV
-        # write r[ii], c[ii], v[ii]
-
-        # Write out scholars ids
-        # write scholars_ids[ii]
+# 
+# for ii in range(n_scholars):
+#     # Write out CSV
+#     write r[ii], c[ii], v[ii]
+# 
+#     Write out scholars ids
+#     write scholars_ids[ii]
 
